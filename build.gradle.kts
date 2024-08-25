@@ -1,8 +1,12 @@
-val ktor_version: String by project
+val ktorVersion: String by project
+val kotlinSerializationVersion: String by project
+val koinKtor: String by project
+val slf4jVersion: String by project
 
 plugins {
-    kotlin("jvm") version "2.0.10"
-    id("io.ktor.plugin") version "2.3.12"
+    kotlin("jvm")
+    kotlin("plugin.serialization")
+    id("io.ktor.plugin")
 }
 
 group = "gp.example"
@@ -13,10 +17,19 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-core:$ktor_version")
-    implementation("io.ktor:ktor-server-netty:$ktor_version")
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$kotlinSerializationVersion")
+    implementation("io.insert-koin:koin-ktor:$koinKtor")
+    implementation("io.insert-koin:koin-logger-slf4j:$koinKtor")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.slf4j:slf4j-jdk14:$slf4jVersion")
     testImplementation(kotlin("test"))
-    testImplementation("io.ktor:ktor-server-test-host-jvm:$ktor_version")
+    testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
 }
 
 tasks.test {
