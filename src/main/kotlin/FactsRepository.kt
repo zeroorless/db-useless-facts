@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 interface FactsRepository {
 
     @Serializable
-    data class Fact(
+    data class RawFact(
         val id: String,
         val text: String,
         val source: String,
@@ -25,5 +25,5 @@ interface FactsRepository {
         data class ParsingError(override val message: String? = null, override val cause: Throwable? = null) : RepositoryError(message, cause)
     }
 
-    suspend fun getFact(): Fact
+    suspend fun getFact(): RawFact
 }

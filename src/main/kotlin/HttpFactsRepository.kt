@@ -25,7 +25,7 @@ class HttpFactsRepository(val url: String) : FactsRepository {
         }
     }
 
-    override suspend fun getFact(): FactsRepository.Fact {
+    override suspend fun getFact(): FactsRepository.RawFact {
         val response = getResponse()
         return handleResponse(response)
     }
@@ -40,14 +40,14 @@ class HttpFactsRepository(val url: String) : FactsRepository {
         }
     }
 
-    private suspend fun handleResponse(response: HttpResponse): FactsRepository.Fact {
+    private suspend fun handleResponse(response: HttpResponse): FactsRepository.RawFact {
         when {
             response.status.isSuccess() -> return parseResponse(response)
             else -> throw RepositoryError.HttpError(response.status.value, response.bodyAsText())
         }
     }
 
-    private suspend fun parseResponse(response: HttpResponse): FactsRepository.Fact {
+    private suspend fun parseResponse(response: HttpResponse): FactsRepository.RawFact {
         try {
             return response.body()
         } catch (t: Throwable) {
