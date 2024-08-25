@@ -40,6 +40,7 @@ fun Application.module() {
     }
 
     val factsHandler by inject<FactsHandler>()
+    val adminHandler by inject<AdminHandler>()
 
     routing {
         route("/facts") {
@@ -58,7 +59,8 @@ fun Application.module() {
         }
         route("/admin") {
             get("/statistics") {
-                call.respondText("You've received statistics")
+                val statistics = adminHandler.getStatistics()
+                call.respond(statistics)
             }
         }
     }

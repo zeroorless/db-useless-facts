@@ -5,7 +5,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 class DefaultFactsHandler(
     private val factsRepository: FactsRepository,
-    private val urlShortener: UrlShortener
+    private val urlShortener: UrlShortener,
+    private val statisticsRepository: StatisticsRepository
 ) : FactsHandler {
 
     val factsCache = ConcurrentHashMap<String, Fact>()
@@ -19,7 +20,6 @@ class DefaultFactsHandler(
     }
 
     override suspend fun getFact(factId: String): Fact? {
-        // TODO update counters
-        return factsCache[factId]
+        return factsCache[factId]?.also { statisticsRepository.update(factId) }
     }
 }

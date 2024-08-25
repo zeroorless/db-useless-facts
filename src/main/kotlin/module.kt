@@ -9,5 +9,7 @@ val apiModule = module {
 
     single { HttpFactsRepository(url) } bind FactsRepository::class
     single { DefaultUrlShortener() } bind UrlShortener::class
-    single { DefaultFactsHandler(get(), get()) } bind FactsHandler::class
+    single { DefaultStatisticsRepository() } bind StatisticsRepository::class
+    single { DefaultFactsHandler(get(), get(), get()) } bind FactsHandler::class
+    single { DefaultAdminHandler(get()) } bind AdminHandler::class
 }
