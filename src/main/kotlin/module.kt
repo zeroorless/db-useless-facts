@@ -1,12 +1,15 @@
 package gp.example
 
+import io.ktor.server.application.Application
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-val apiModule = module {
-    //FIXME Add Config for constants
-    val url = "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en"
+fun initModule(application: Application) = module {
+    val config = application.environment.config
+    val authConfig = AuthConfig(config.property("ktor.auth.token").getString())
+    val url = config.property("ktor.facts.url").getString()
 
+    single { DefaultAuthenticationService(authConfig) } bind AuthenticationService::class
     single { HttpFactsRepository(url) } bind FactsRepository::class
     single { DefaultUrlShortener() } bind UrlShortener::class
     single { DefaultStatisticsRepository() } bind StatisticsRepository::class

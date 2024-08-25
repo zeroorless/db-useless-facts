@@ -3,6 +3,11 @@ package gp.example
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
+import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.UserIdPrincipal
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.bearer
+import io.ktor.server.auth.principal
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
@@ -23,10 +28,17 @@ fun main(args: Array<String>) = EngineMain.main(args)
 @OptIn(ExperimentalSerializationApi::class)
 fun Application.module() {
 
+    val token = environment.config.property("ktor.auth.token").getString()
+    logger.info("Authorisation token: $token")
+
     install(Koin) {
         slf4jLogger()
-        modules(apiModule)
+        modules(initModule(this@module))
     }
+
+    val factsHandler by inject<FactsHandler>()
+    val adminHandler by inject<AdminHandler>()
+    val authenticationService by inject<AuthenticationService>()
 
     install(StatusPages) {
         exception<Throwable> { call, cause ->
@@ -39,8 +51,16 @@ fun Application.module() {
         json(Json { namingStrategy = SnakeCase })
     }
 
-    val factsHandler by inject<FactsHandler>()
-    val adminHandler by inject<AdminHandler>()
+    install(Authentication) {
+        bearer("auth-bearer") {
+            realm = "Access to /admin endpoints"
+            authenticate { tokenCredential ->
+                authenticationService.authenticate(tokenCredential.token)?.let {
+                    UserIdPrincipal(it)
+                }
+            }
+        }
+    }
 
     routing {
         route("/facts") {
@@ -57,10 +77,16 @@ fun Application.module() {
             }
 
         }
-        route("/admin") {
-            get("/statistics") {
-                val statistics = adminHandler.getStatistics()
-                call.respond(statistics)
+        authenticate("auth-bearer") {
+            route("/admin") {
+                get("/statistics") {
+                    if (call.principal<UserIdPrincipal>()?.name == "admin") {
+                        val statistics = adminHandler.getStatistics()
+                        call.respond(statistics)
+                    } else {
+                        call.respond(HttpStatusCode.Forbidden)
+                    }
+                }
             }
         }
     }
