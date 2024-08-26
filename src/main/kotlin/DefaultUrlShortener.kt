@@ -2,16 +2,18 @@ package gp.example
 
 import gp.example.FactsRepository.RawFact
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
-class DefaultUrlShortener : UrlShortener {
-    // FIXME max capacity / eviction policy ?
-    val originalToShortened = ConcurrentHashMap<String, String>()
-    val shortenedToOriginal = ConcurrentHashMap<String, String>()
+class DefaultUrlShortener(private val encoder: Encoder) : UrlShortener {
+    // TODO max capacity / eviction policy ?
+    private val originalToShortened = ConcurrentHashMap<String, String>()
+    private val shortenedToOriginal = ConcurrentHashMap<String, String>()
+    val lastId = AtomicLong(0)
 
     override fun getShortenedUrl(rawFact: RawFact): String {
         val originalUrl = rawFact.permalink
         originalToShortened.computeIfAbsent(originalUrl) {
-            val shortened = shortenUrl(rawFact)
+            val shortened = encoder.encode(lastId.andIncrement)
             shortenedToOriginal[shortened] = originalUrl
             shortened
         }
@@ -20,10 +22,5 @@ class DefaultUrlShortener : UrlShortener {
 
     override fun getOriginalUrl(shortenedUrl: String): String? {
         return shortenedToOriginal[shortenedUrl]
-    }
-
-    private fun shortenUrl(rawFact: RawFact): String {
-        // TODO smarter shortening based on fact.permalink ?
-        return rawFact.id
     }
 }
