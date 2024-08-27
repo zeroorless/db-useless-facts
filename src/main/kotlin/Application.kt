@@ -13,6 +13,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.plugins.swagger.swaggerUI
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy.Builtins.SnakeCase
@@ -89,5 +90,7 @@ fun Application.module() {
                 }
             }
         }
+
+        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
     }
 }

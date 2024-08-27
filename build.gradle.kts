@@ -2,6 +2,7 @@ val ktorVersion: String by project
 val kotlinSerializationVersion: String by project
 val koinKtor: String by project
 val slf4jVersion: String by project
+val swaggerCodegenVersion: String by project
 
 plugins {
     kotlin("jvm")
@@ -22,12 +23,14 @@ dependencies {
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-server-swagger:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$kotlinSerializationVersion")
     implementation("io.insert-koin:koin-ktor:$koinKtor")
     implementation("io.insert-koin:koin-logger-slf4j:$koinKtor")
+    implementation("io.swagger.codegen.v3:swagger-codegen-generators:$swaggerCodegenVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.slf4j:slf4j-jdk14:$slf4jVersion")
     testImplementation(kotlin("test"))

@@ -1,0 +1,95 @@
+openapi: "3.1.0"
+info:
+  title: "Useless Facts API Proxy"
+  description: "Fetches and caches useless facts.Provides facts access statistics."
+  version: "0.9.0"
+servers:
+- url: "http://0.0.0.0:8080"
+paths:
+  /admin/statistics:
+    get:
+      security:
+        - bearerAuth: []
+      description: "Provides access statistics for cached facts"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Statistics"
+        "403":
+          description: "Forbidden"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+  /facts:
+    post:
+      description: "Requesting and caching a new useless fact."
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Fact"
+  /facts/{shortenedUrl}:
+    get:
+      description: "Get a cached useless fact by a shortened URL"
+      parameters:
+      - name: "shortenedUrl"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "400":
+          description: "Bad Request"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Missing fact id."
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Fact"
+        "404":
+          description: "Not Found"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+components:
+  schemas:
+    Statistics:
+      type: "object"
+      properties:
+        shortenedUrl:
+          type: "string"
+        accessCount:
+          type: "integer"
+          format: "int32"
+      required:
+      - "shortenedUrl"
+    Fact:
+      type: "object"
+      properties:
+        originalFact:
+          type: "string"
+        shortenedUrl:
+          type: "string"
+      required:
+      - "originalFact"
+      - "shortenedUrl"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
