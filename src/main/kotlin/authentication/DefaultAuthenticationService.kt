@@ -1,4 +1,4 @@
-package gp.example
+package gp.example.authentication
 
 data class AuthConfig(val adminToken: String)
 

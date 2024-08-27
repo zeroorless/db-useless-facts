@@ -1,4 +1,4 @@
-package gp.example
+package gp.example.repositories
 
 interface StatisticsRepository {
     data class UrlStatistics(val url: String, val count: Int)

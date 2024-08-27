@@ -1,4 +1,4 @@
-package gp.example
+package gp.example.utils
 
 interface Encoder {
     fun encode(n: Long): String

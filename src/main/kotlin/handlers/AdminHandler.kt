@@ -1,4 +1,4 @@
-package gp.example
+package gp.example.handlers
 
 import kotlinx.serialization.Serializable
 

@@ -1,4 +1,4 @@
-package gp.example
+package gp.example.repositories
 
 import kotlinx.serialization.Serializable
 

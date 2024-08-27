@@ -1,5 +1,9 @@
 package gp.example
 
+import gp.example.authentication.AuthenticationService
+import gp.example.handlers.AdminHandler
+import gp.example.handlers.FactsHandler
+import gp.example.koin.initModule
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*

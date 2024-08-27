@@ -1,4 +1,4 @@
-package gp.example
+package gp.example.utils
 
 class Base62Encoder : Encoder {
     companion object {

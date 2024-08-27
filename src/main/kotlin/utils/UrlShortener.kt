@@ -1,6 +1,6 @@
-package gp.example
+package gp.example.utils
 
-import gp.example.FactsRepository.RawFact
+import gp.example.repositories.FactsRepository.RawFact
 
 interface UrlShortener {
     fun getShortenedUrl(rawFact: RawFact): String

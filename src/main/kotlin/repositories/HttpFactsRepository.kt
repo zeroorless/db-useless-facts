@@ -1,10 +1,9 @@
-package gp.example
+package gp.example.repositories
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
-import gp.example.FactsRepository.RepositoryError
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.statement.bodyAsText
@@ -14,10 +13,9 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 
-class HttpFactsRepository(val url: String) : FactsRepository {
-    companion object {
-        const val timeout = 500L
-    }
+data class HttpFactsConfig(val url: String, val timeout: Long)
+
+class HttpFactsRepository(val config: HttpFactsConfig) : FactsRepository {
 
     private val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -32,18 +30,18 @@ class HttpFactsRepository(val url: String) : FactsRepository {
 
     private suspend fun getResponse(): HttpResponse {
         try {
-            return withTimeout(timeout) { httpClient.get(url) }
+            return withTimeout(config.timeout) { httpClient.get(config.url) }
         } catch (_: TimeoutCancellationException) {
-            throw RepositoryError.NetworkError.TimeoutError
+            throw FactsRepository.RepositoryError.NetworkError.TimeoutError
         } catch (t: Throwable) {
-            throw RepositoryError.NetworkError.ConnectionError(t)
+            throw FactsRepository.RepositoryError.NetworkError.ConnectionError(t)
         }
     }
 
     private suspend fun handleResponse(response: HttpResponse): FactsRepository.RawFact {
         when {
             response.status.isSuccess() -> return parseResponse(response)
-            else -> throw RepositoryError.HttpError(response.status.value, response.bodyAsText())
+            else -> throw FactsRepository.RepositoryError.HttpError(response.status.value, response.bodyAsText())
         }
     }
 
@@ -51,7 +49,7 @@ class HttpFactsRepository(val url: String) : FactsRepository {
         try {
             return response.body()
         } catch (t: Throwable) {
-            throw RepositoryError.ParsingError("Couldn't parse response: $response", t)
+            throw FactsRepository.RepositoryError.ParsingError("Couldn't parse response: $response", t)
         }
     }
 }

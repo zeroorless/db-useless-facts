@@ -1,6 +1,8 @@
-package gp.example
+package gp.example.handlers
 
-import gp.example.FactsHandler.Fact
+import gp.example.repositories.FactsRepository
+import gp.example.repositories.StatisticsRepository
+import gp.example.utils.UrlShortener
 import java.util.concurrent.ConcurrentHashMap
 
 class DefaultFactsHandler(
@@ -9,17 +11,17 @@ class DefaultFactsHandler(
     private val statisticsRepository: StatisticsRepository
 ) : FactsHandler {
 
-    val factsCache = ConcurrentHashMap<String, Fact>()
+    val factsCache = ConcurrentHashMap<String, FactsHandler.Fact>()
 
-    override suspend fun putFact(): Fact {
+    override suspend fun putFact(): FactsHandler.Fact {
         val rawFact = factsRepository.getFact()
         val shortenedUrl = urlShortener.getShortenedUrl(rawFact)
-        val fact = Fact(rawFact.text, shortenedUrl)
+        val fact = FactsHandler.Fact(rawFact.text, shortenedUrl)
         factsCache.putIfAbsent(shortenedUrl, fact)
         return fact
     }
 
-    override suspend fun getFact(factId: String): Fact? {
+    override suspend fun getFact(factId: String): FactsHandler.Fact? {
         return factsCache[factId]?.also { statisticsRepository.update(factId) }
     }
 }

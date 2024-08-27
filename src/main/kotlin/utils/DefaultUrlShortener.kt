@@ -1,6 +1,6 @@
-package gp.example
+package gp.example.utils
 
-import gp.example.FactsRepository.RawFact
+import gp.example.repositories.FactsRepository.RawFact
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
