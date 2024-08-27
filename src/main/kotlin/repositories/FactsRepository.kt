@@ -17,12 +17,12 @@ interface FactsRepository {
     interface Retryable
 
     sealed class RepositoryError(override val message: String? = null, override val cause: Throwable? = null) : Exception(message, cause) {
-        data class HttpError(val status: Int, val body: String) : RepositoryError() {}
-        sealed class NetworkError(cause: Throwable? = null) : RepositoryError(cause = cause), Retryable {
-            object TimeoutError: NetworkError()
-            class ConnectionError(cause: Throwable): NetworkError(cause)
+        data class CommunicationError(override val message: String? = null, override val cause: Throwable? = null) : RepositoryError(message, cause)
+        sealed class ProtocolError() : RepositoryError() {
+            data class HttpError(val status: Int, val body: String?) : ProtocolError()
         }
-        data class ParsingError(override val message: String? = null, override val cause: Throwable? = null) : RepositoryError(message, cause)
+        data class OverloadedError(val retryAfter: Int? = null) : RepositoryError("Too many requests, please retry later.")
+        data class DataFormatError(override val message: String? = null, override val cause: Throwable? = null) : RepositoryError(message, cause)
     }
 
     suspend fun getFact(): RawFact

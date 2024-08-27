@@ -4,6 +4,7 @@ import gp.example.authentication.AuthenticationService
 import gp.example.handlers.AdminHandler
 import gp.example.handlers.FactsHandler
 import gp.example.koin.initModule
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
@@ -48,7 +49,14 @@ fun Application.module() {
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             logger.error(call.toString(), cause)
-            call.respondText(text = "Internal server error, we're working on it." , status = HttpStatusCode.InternalServerError)
+            when (cause) {
+                is FactsHandler.HandlerError.OverloadedError ->  {
+                    cause.retryAfter?.let { call.response.headers.append(HttpHeaders.RetryAfter, it.toString()) }
+                    call.respond(HttpStatusCode.TooManyRequests)
+                }
+                is FactsHandler.HandlerError.DownstreamError -> call.respond(HttpStatusCode.ServiceUnavailable)
+                else -> call.respond(HttpStatusCode.InternalServerError)
+            }
         }
     }
 
@@ -86,8 +94,7 @@ fun Application.module() {
             route("/admin") {
                 get("/statistics") {
                     if (call.principal<UserIdPrincipal>()?.name == "admin") {
-                        val statistics = adminHandler.getStatistics()
-                        call.respond(statistics)
+                        call.respond(adminHandler.getStatistics())
                     } else {
                         call.respond(HttpStatusCode.Forbidden)
                     }
