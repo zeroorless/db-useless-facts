@@ -4,46 +4,17 @@ package gp.example.repositories
 import gp.example.repositories.FactsRepository.RepositoryError
 import gp.example.repositories.FactsRepository.RepositoryError.ProtocolError
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.call.body
-import io.ktor.client.network.sockets.ConnectTimeoutException
-import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpRequestTimeoutException
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.json.Json
 
-data class HttpFactsConfig(val url: String, val timeout: Long)
+data class HttpFactsConfig(val url: String)
 
-class HttpFactsRepository(val config: HttpFactsConfig) : FactsRepository {
-
-    private val httpClient = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(Json { ignoreUnknownKeys = true })
-        }
-        install(HttpTimeout) {
-            requestTimeoutMillis = config.timeout
-        }
-        install(HttpRequestRetry) {
-            //we can retry 429 here, since exponentialDelay() below respects retry-after header
-            retryIf(2) {_ , response -> response.status.value == 429 }
-            retryOnServerErrors(2)
-            retryOnExceptionIf(2) {_, e ->
-                when (e) {
-                    is HttpRequestTimeoutException, is ConnectTimeoutException -> true
-                    else -> false
-                }
-            }
-            exponentialDelay()
-        }
-    }
+class HttpFactsRepository(val config: HttpFactsConfig, private val httpClient: HttpClient) : FactsRepository {
 
     override suspend fun getFact(): FactsRepository.RawFact {
         val response = getResponse()

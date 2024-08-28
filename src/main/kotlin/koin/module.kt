@@ -15,6 +15,8 @@ import gp.example.handlers.AdminHandler
 import gp.example.handlers.DefaultAdminHandler
 import gp.example.handlers.DefaultFactsHandler
 import gp.example.handlers.FactsHandler
+import gp.example.http.HttpClientConfig
+import gp.example.http.HttpClientFactory
 import gp.example.repositories.HttpFactsConfig
 import io.ktor.server.application.Application
 import org.koin.dsl.bind
@@ -24,12 +26,14 @@ fun initModule(application: Application) = module {
     val config = application.environment.config
     val authConfig = AuthConfig(config.property("ktor.auth.token").getString())
     val uselessFactsUrl = config.property("ktor.facts.url").getString()
+    val uselessFactsConfig = HttpFactsConfig(uselessFactsUrl)
     val uselessFactsTimeout = config.property("ktor.facts.timeout").getString().toLong()
-    val uselessFactsConfig = HttpFactsConfig(uselessFactsUrl, uselessFactsTimeout)
+    val httpClientConfig = HttpClientConfig(uselessFactsTimeout)
 
     single { Base62Encoder() } bind Encoder::class
+    single { HttpClientFactory(httpClientConfig).getClient() }
     single { DefaultAuthenticationService(authConfig) } bind AuthenticationService::class
-    single { HttpFactsRepository(uselessFactsConfig) } bind FactsRepository::class
+    single { HttpFactsRepository(uselessFactsConfig, get()) } bind FactsRepository::class
     single { DefaultUrlShortener(get()) } bind UrlShortener::class
     single { DefaultStatisticsRepository() } bind StatisticsRepository::class
     single { DefaultFactsHandler(get(), get(), get()) } bind FactsHandler::class
